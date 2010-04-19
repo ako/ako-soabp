@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+   <html xmlns="http://www.w3.org/1999/xhtml"
+         xmlns:h="http://java.sun.com/jsf/html"
+         xmlns:f="http://java.sun.com/jsf/core">
+   <h:head>
+     <title>Order</title>
+   </h:head>
+   <h:body>
+     <h:form>
+         <p>Streetname: <h:outputText value="#{relationService.address.streetName}"/><br/>
+         Streetnumber:  <h:outputText value="#{relationService.address.streetNumber}"/><br/>
+         Zipcode:  <h:outputText value="#{relationService.address.zipCode}"/><br/>
+         City:  <h:outputText value="#{relationService.address.city}"/><br/>
+         </p>
+         <p><h:commandButton value="Get address" action="#{relationService.doGetAddress}" /></p>
+     </h:form>
+   </h:body>
+   </html>

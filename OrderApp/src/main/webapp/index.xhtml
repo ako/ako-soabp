@@ -9,12 +9,18 @@
    </h:head>
    <h:body>
      <h:form>
+         <h2>Customer</h2>
+         <p>
+             Lastname: <h:outputText value="#{relationService.customer.lastName}"/><br/>
+         </p>
+         <p><h:commandButton value="Get customer" action="#{relationService.showCustomerAction}" /></p>
+         <h2>Address</h2>
          <p>Streetname: <h:outputText value="#{relationService.address.streetName}"/><br/>
          Streetnumber:  <h:outputText value="#{relationService.address.streetNumber}"/><br/>
          Zipcode:  <h:outputText value="#{relationService.address.zipCode}"/><br/>
          City:  <h:outputText value="#{relationService.address.city}"/><br/>
          </p>
-         <p><h:commandButton value="Get address" action="#{relationService.doGetAddress}" /></p>
+         <p><h:commandButton value="Get address" action="#{relationService.showAddressAction}" /></p>
      </h:form>
    </h:body>
    </html>

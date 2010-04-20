@@ -4,6 +4,7 @@
  */
 package nl.iteye.services.relationrestservice.model;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -42,7 +43,7 @@ public class Customer {
     private String lastName;
     private Link addressLink;
 
-
+    @XmlElement(name = "link")
     public Link getAddressLink() {
         return addressLink;
     }

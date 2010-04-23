@@ -6,7 +6,7 @@ package nl.iteye.webapps.orderapp;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
-import java.net.URI;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
@@ -21,8 +21,10 @@ import nl.iteye.webapps.orderapp.model.Customer;
 @RequestScoped
 public class RelationClient {
 
-    private static final Logger log = Logger.getLogger(RelationClient.class.
-            getName());
+    private static final int relationSvcPort = 9080;
+    private static final String relationSvcHost = "localhost";
+    private static final String relationSvcPath = "relation";
+    private static final Logger log = Logger.getLogger(RelationClient.class.getName());
     private Address address;
     private Customer customer;
 
@@ -43,6 +45,7 @@ public class RelationClient {
     }
 
     public String showAddressAction() {
+        log.info("showAddressAction");
         this.address = getAddressResourceById(1);
         return null;
     }
@@ -51,19 +54,21 @@ public class RelationClient {
         log.info("getAddressResource");
         Client c = Client.create();
         WebResource r = c.resource(
-                "http://localhost:12573/RelationRestService/webresources/");
+                "http://" + relationSvcHost + ":" + relationSvcPort + "/" + relationSvcPath + "/");
         Address address = r.path("address/" + id).get(Address.class);
         return address;
     }
 
-    public Address getAddressResourceByHref(String href){
-        Client c= Client.create();
+    public Address getAddressResourceByHref(String href) {
+        log.info("getAddressResourceByHref");
+        Client c = Client.create();
         WebResource r = c.resource(href);
         Address address = r.get(Address.class);
         return address;
     }
 
     public String showCustomerAction() {
+        log.info("showCustomerAction");
         this.customer = getCustomerResource(1);
         this.address = getAddressResourceByHref(customer.getAddressLink().getHref());
         return null;
@@ -73,7 +78,7 @@ public class RelationClient {
         log.info("getCustomerResource: " + id);
         Client c = Client.create();
         WebResource r = c.resource(
-                "http://localhost:12573/RelationRestService/webresources/");
+                "http://" + relationSvcHost + ":" + relationSvcPort + "/" + relationSvcPath + "/");
         Customer customer = r.path("customer/" + id).get(Customer.class);
 
         return customer;

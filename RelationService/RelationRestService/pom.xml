@@ -11,7 +11,7 @@
     <artifactId>RelationRestService</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>RelationRestService Jersey Webapp</name>
+    <name>RelationRestService</name>
     <build>
         <finalName>RelationRestService</finalName>
         <plugins>

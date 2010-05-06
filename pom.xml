@@ -20,5 +20,6 @@
     <module>RelationProxy</module>
     <module>RelationComposite</module>
     <module>OrderApp</module>
+    <module>NewOrderProcess</module>
   </modules>
 </project>

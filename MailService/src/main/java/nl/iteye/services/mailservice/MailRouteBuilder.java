@@ -23,18 +23,21 @@ public class MailRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        String smtpHost = System.getProperty("smtp.host","localhost");
-        String smtpUsername = System.getProperty("smtp.username",null);
-        String smtpPassword = System.getProperty("smtp.password",null);
+        String smtpHost = System.getProperty("smtp.host", "localhost");
+        String smtpUsername = System.getProperty("smtp.username", null);
+        String smtpPassword = System.getProperty("smtp.password", null);
+        String smtpPort = System.getProperty("smtp.port", null);
+        boolean smtpUseSSL = System.getProperty("smtp.useSSL", "false").equals(
+                "true");
         log.info(
-                "smtps://" + smtpHost + "?password=" + smtpPassword + "&username=" + smtpUsername);
+                "smtp" + (smtpUseSSL ? "s": "") + "://" + smtpHost + ":" + smtpPort + "?password=" + smtpPassword + "&username=" + smtpUsername);
         from("restlet://http://localhost:8786/mail/outbox?restletMethods=post").
                 to("log:nl.iteye.services.mailservice.MailRouteBuilder").
                 to("file:///tmp/mail").
-                setHeader("to", xpath("/mail/to").stringResult()).
-                setHeader("subject", xpath("/mail/subject").stringResult()).
+                setHeader("to", xpath("/mail/to")).
+                setHeader("subject", xpath("/mail/subject")).
                 setBody(xpath("/mail/body")).
                 to(
-                "smtps://" + smtpHost + "?password=" + smtpPassword + "&username=" + smtpUsername);
+                "smtp" + (smtpUseSSL ? "s": "") + "://" + smtpHost + ":" + smtpPort + "?password=" + smtpPassword + "&username=" + smtpUsername);
     }
 }

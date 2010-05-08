@@ -5,7 +5,8 @@
 package nl.iteye.services.mailservice;
 
 import java.util.logging.Logger;
-import javax.annotation.Resource;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.xpath;
 
@@ -29,15 +30,36 @@ public class MailRouteBuilder extends RouteBuilder {
         String smtpPort = System.getProperty("smtp.port", null);
         boolean smtpUseSSL = System.getProperty("smtp.useSSL", "false").equals(
                 "true");
-        log.info(
-                "smtp" + (smtpUseSSL ? "s": "") + "://" + smtpHost + ":" + smtpPort + "?password=" + smtpPassword + "&username=" + smtpUsername);
+
+        String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
+                + "://" + smtpHost + ":" + smtpPort
+                + "?password=" + smtpPassword + "&username=" + smtpUsername;
+        log.info(smtpUrl);
+
         from("restlet://http://localhost:8786/mail/outbox?restletMethods=post").
-                to("log:nl.iteye.services.mailservice.MailRouteBuilder").
-                to("file:///tmp/mail").
+                to("file:/tmp/outboxfile").
+                multicast().
+                to("direct:sendMail", "direct:storeSentMail");
+        from("direct:sendMail").
                 setHeader("to", xpath("/mail/to")).
                 setHeader("subject", xpath("/mail/subject")).
                 setBody(xpath("/mail/body")).
-                to(
-                "smtp" + (smtpUseSSL ? "s": "") + "://" + smtpHost + ":" + smtpPort + "?password=" + smtpPassword + "&username=" + smtpUsername);
+                to(smtpUrl);
+        from("direct:storeSentMail").
+                to("file:/tmp/sent").
+                process(new Processor() {
+                    @Override
+                    public void process(Exchange exchng) throws Exception {
+                        System.out.println("Received exchange: " + exchng.getIn());
+                        exchng.getIn().setBody("http://localhost:8786/mail/sent/" + exchng.
+                            getIn().getMessageId() );
+                    }
+                });
+        from("restlet://http://localhost:8786/mail/sent/{msgId}?restletMethods=get").
+                log("received get request").
+                to("log:outbox.get").
+                pollEnrich(simple("file:/tmp/sent/${in.header.msgId}"), 0).
+                to("log:file contents");
+
     }
 }

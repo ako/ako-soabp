@@ -58,7 +58,12 @@ private Wiser smtpServer;
                 "http://localhost:8786/mail/outbox");
         String result = resource.post(String.class,
                                       "<mail><to>andrej@koelewijn.net</to><subject>Test</subject><body>HelloWorld</body></mail>");
-        log.info("result:" + result);
+        log.info("result from post to outbox:" + result);
         log.info("wiser message: " + smtpServer.getMessages().get(0));
+
+        // test sentMail resources
+        WebResource resource2 = client.resource( result );
+        String result2 = resource2.get(String.class);
+        log.info("result 2: " + result2);
     }
 }

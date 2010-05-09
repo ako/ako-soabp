@@ -5,10 +5,13 @@
 package nl.iteye.services.mailservice;
 
 import java.util.logging.Logger;
+import org.apache.camel.CamelContext;
+import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.xpath;
+import static org.apache.camel.language.simple.SimpleLanguage.simple;
 
 /**
  *
@@ -47,18 +50,26 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                process(new Processor() {
+                setOutHeader("location",simple("http://localhost:8786/mail/sent/${id}")).
+                setOutHeader("Content-Location",simple("http://localhost:8786/mail/sent/${id}")).
+                setOutHeader("Content-Type",constant("application/xml")).
+                setOutHeader("CamelHttpResponseCode",constant(201))
+                //setBody(xpath("/mail/body"))
+
+                ;
+        from("restlet://http://localhost:8786/mail/sent/{msgId}?restletMethods=get").
+                to("log:outbox.get").
+                process(new Processor(){
                     @Override
                     public void process(Exchange exchng) throws Exception {
-                        System.out.println("Received exchange: " + exchng.getIn());
-                        exchng.getIn().setBody("http://localhost:8786/mail/sent/" + exchng.
-                            getIn().getMessageId() );
+                        log.info("Received exchange: " + exchng.getIn().getHeader("msgId"));
+                        CamelContext context = exchng.getContext();
+                        ConsumerTemplate template = context.createConsumerTemplate();
+                        Object fileBody = template.receiveBody("file:/tmp/sent?fileName=" + exchng.getIn().getHeader("msgId"));
+                        log.info("file body: " + fileBody);
+                        exchng.getIn().setBody(fileBody);
                     }
-                });
-        from("restlet://http://localhost:8786/mail/sent/{msgId}?restletMethods=get").
-                log("received get request").
-                to("log:outbox.get").
-                pollEnrich(simple("file:/tmp/sent/${in.header.msgId}"), 0).
+                }).
                 to("log:file contents");
 
     }

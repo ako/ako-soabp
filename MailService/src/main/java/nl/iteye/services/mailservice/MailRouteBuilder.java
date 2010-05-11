@@ -4,6 +4,9 @@
  */
 package nl.iteye.services.mailservice;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
@@ -27,11 +30,13 @@ public class MailRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        String smtpHost = System.getProperty("smtp.host", "localhost");
-        String smtpUsername = System.getProperty("smtp.username", null);
-        String smtpPassword = System.getProperty("smtp.password", null);
-        String smtpPort = System.getProperty("smtp.port", null);
-        boolean smtpUseSSL = System.getProperty("smtp.useSSL", "false").equals(
+        Properties config = getConfig();
+
+        String smtpHost = config.getProperty("smtp.host", "localhost");
+        String smtpUsername = config.getProperty("smtp.username", null);
+        String smtpPassword = config.getProperty("smtp.password", null);
+        String smtpPort = config.getProperty("smtp.port", null);
+        boolean smtpUseSSL = config.getProperty("smtp.useSSL", "false").equals(
                 "true");
 
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
@@ -40,6 +45,7 @@ public class MailRouteBuilder extends RouteBuilder {
         log.info(smtpUrl);
 
         from("restlet://http://localhost:8786/mail/outbox?restletMethods=post").
+                to("log:outbox.received?showAll=true").
                 to("file:/tmp/outboxfile").
                 multicast().
                 to("direct:sendMail", "direct:storeSentMail");
@@ -72,5 +78,15 @@ public class MailRouteBuilder extends RouteBuilder {
                 }).
                 to("log:file contents");
 
+    }
+
+    private Properties getConfig() throws IOException {
+        String userHome = System.getProperty("user.home");
+        String fileSeparator = System.getProperty("file.separator");
+        String configFilename = System.getProperty("soabp.config.path",
+                                                   userHome + fileSeparator + ".soabp" + fileSeparator + "config.properties");
+        Properties config = new Properties();
+        config.load(new FileInputStream(configFilename));
+        return config;
     }
 }

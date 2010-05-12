@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>SoaBlueprint</artifactId>
+    <groupId>nl.iteye.services</groupId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>nl.iteye.businessprocess</groupId>
+  <artifactId>NewProspectBP</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jbi-service-unit</packaging>
+  <name>A example service unit using Apache ODE's Service Engine</name>
+  <url>http://www.myorganization.org</url>
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>jbi-maven-plugin</artifactId>
+        <version>4.2.0-fuse-01-00</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+  <repositories>
+    <repository>
+      <releases />
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>open.iona.m2</id>
+      <name>IONA Open Source Community Release Repository</name>
+      <url>http://repo.open.iona.com/maven2</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>open.iona.m2-snapshot</id>
+      <name>IONA Open Source Community Snapshot Repository</name>
+      <url>http://repo.open.iona.com/maven2-snapshot</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <releases />
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>open.iona.m2</id>
+      <name>IONA Open Source Community Release Repository</name>
+      <url>http://repo.open.iona.com/maven2</url>
+    </pluginRepository>
+    <pluginRepository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots />
+      <id>open.iona.m2-snapshot</id>
+      <name>IONA Open Source Community Snapshot Repository</name>
+      <url>http://repo.open.iona.com/maven2-snapshot</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <properties>
+    <componentName>OdeBpelEngine</componentName>
+  </properties>
+</project>

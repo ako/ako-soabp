@@ -21,5 +21,6 @@
     <module>RelationComposite</module>
     <module>OrderApp</module>
     <module>NewOrderProcess</module>
+    <module>RelationDb</module>
   </modules>
 </project>

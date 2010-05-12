@@ -59,7 +59,7 @@ public class MailRouteBuilderTest extends TestCase {
         super(testName);
     }
 
-    public void xtestConfigure() throws Exception {
+    public void testConfigure() throws Exception {
         Client client = new Client();
         String mailMsg = "<mail><to>x@y.net</to><subject>Test</subject><body>HelloWorld</body></mail>";
         WebResource resource = client.resource(

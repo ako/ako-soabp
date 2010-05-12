@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package nl.iteye.services.mailservicemodel;
+package nl.iteye.services.mailservice.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

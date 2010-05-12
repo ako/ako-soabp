@@ -11,7 +11,7 @@ import com.sun.jersey.api.client.WebResource;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import junit.framework.TestCase;
-import nl.iteye.services.mailservicemodel.MailMessage;
+import nl.iteye.services.mailservice.model.MailMessage;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.subethamail.wiser.Wiser;
@@ -31,19 +31,20 @@ public class MailRouteBuilderTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
         // setup mail server
-        System.setProperty("smtp.host", "localhost");
-        System.setProperty("smtp.username", "");
-        System.setProperty("smtp.password", "");
-        System.setProperty("smtp.port", "44552");
-        System.setProperty("smtp.useSSL", "false");
         smtpServer = new Wiser();
         smtpServer.setPort(44552);
         smtpServer.start();
 
         // setup camel routes
         ctx = new DefaultCamelContext();
-        ctx.addRoutes(new MailRouteBuilder());
+        MailRouteBuilder mrb = new MailRouteBuilder();
+        System.setProperty("soabp.config",
+                           "classpath:/soabp-config.properties");
+        Configuration config = new Configuration();
+        mrb.config = config;
+        ctx.addRoutes(mrb);
         ctx.start();
     }
 
@@ -60,17 +61,17 @@ public class MailRouteBuilderTest extends TestCase {
 
     public void xtestConfigure() throws Exception {
         Client client = new Client();
-        String mailMsg = "<mail><to>andrej@koelewijn.net</to><subject>Test</subject><body>HelloWorld</body></mail>";
+        String mailMsg = "<mail><to>x@y.net</to><subject>Test</subject><body>HelloWorld</body></mail>";
         WebResource resource = client.resource(
                 "http://localhost:8786/mail/outbox");
         ClientResponse response = resource.post(ClientResponse.class, mailMsg);
         Status status = response.getClientResponseStatus();
         log.info("Response status: " + status);
-        assertEquals(status.CREATED,status);
+        assertEquals(status.CREATED, status);
         String responseData = response.getEntity(String.class);
         log.info("result from post to outbox:" + responseData);
         assertEquals(mailMsg, responseData);
-            
+
         // check mail received
         WiserMessage receivedMail = smtpServer.getMessages().get(0);
         log.info("wiser message: " + smtpServer.getMessages().get(0));
@@ -85,16 +86,17 @@ public class MailRouteBuilderTest extends TestCase {
 
     public void testJaxbData() throws Exception {
         Client client = new Client();
- //       String mailMsg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<mail><body>HelloWorld!</body><subject>test</subject><to>andrej@koelewijn.net</to></mail>";
- //       String mailMsg = "<mail><body>HelloWorld!</body><subject>test</subject><to>andrej@koelewijn.net</to></mail>";
+        //       String mailMsg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<mail><body>HelloWorld!</body><subject>test</subject><to>x@y.net</to></mail>";
+               String mailMsg = "<mail><body>HelloWorld!</body><subject>test</subject><to>x@y.net</to></mail>";
         MailMessage msg = new MailMessage();
-        msg.setTo("andrej@koelewijn.net");
+        msg.setTo("x@y.net");
         msg.setSubject("test");
         msg.setBody("HelloWorld!");
         WebResource resource = client.resource(
                 "http://localhost:8786/mail/outbox");
         //        "http://localhost:7676/mail/outbox");
-        ClientResponse response = resource.type(MediaType.APPLICATION_XML).post(ClientResponse.class, msg);
+        ClientResponse response = resource.type(MediaType.APPLICATION_XML).post(
+                ClientResponse.class, mailMsg);
         Status status = response.getClientResponseStatus();
         log.info("Response status: " + status);
     }

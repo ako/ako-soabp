@@ -4,10 +4,8 @@
  */
 package nl.iteye.services.mailservice;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
@@ -27,16 +25,16 @@ public class MailRouteBuilder extends RouteBuilder {
 
     private static final Logger log = Logger.getLogger(MailRouteBuilder.class.
             getName());
+    @Inject
+    Configuration config;
 
     @Override
     public void configure() throws Exception {
-        Properties config = getConfig();
-
-        String smtpHost = config.getProperty("smtp.host", "localhost");
-        String smtpUsername = config.getProperty("smtp.username", null);
-        String smtpPassword = config.getProperty("smtp.password", null);
-        String smtpPort = config.getProperty("smtp.port", null);
-        boolean smtpUseSSL = config.getProperty("smtp.useSSL", "false").equals(
+        String smtpHost = config.getProperty("smtp.host");
+        String smtpUsername = config.getProperty("smtp.username");
+        String smtpPassword = config.getProperty("smtp.password");
+        String smtpPort = config.getProperty("smtp.port");
+        boolean smtpUseSSL = config.getProperty("smtp.useSSL").equals(
                 "true");
 
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
@@ -44,7 +42,7 @@ public class MailRouteBuilder extends RouteBuilder {
                 + "?password=" + smtpPassword + "&username=" + smtpUsername;
         log.info(smtpUrl);
 
-        from("restlet://http://localhost:8786/mail/outbox?restletMethods=post").
+        from("restlet://http://localhost:8786/mail/outbox?restletMethod=post").
                 to("log:outbox.received?showAll=true").
                 to("file:/tmp/outboxfile").
                 multicast().
@@ -56,37 +54,30 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                setOutHeader("location",simple("http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Location",simple("http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Type",constant("application/xml")).
-                setOutHeader("CamelHttpResponseCode",constant(201))
-                //setBody(xpath("/mail/body"))
-
+                setOutHeader("location", simple(
+                "http://localhost:8786/mail/sent/${id}")).
+                setOutHeader("Content-Location", simple(
+                "http://localhost:8786/mail/sent/${id}")).
+                setOutHeader("Content-Type", constant("application/xml")).
+                setOutHeader("CamelHttpResponseCode", constant(201)) //setBody(xpath("/mail/body"))
                 ;
-        from("restlet://http://localhost:8786/mail/sent/{msgId}?restletMethods=get").
+        from("restlet://http://localhost:8786/mail/sent/{id}?restletMethod=get").
                 to("log:outbox.get").
-                process(new Processor(){
-                    @Override
-                    public void process(Exchange exchng) throws Exception {
-                        log.info("Received exchange: " + exchng.getIn().getHeader("msgId"));
-                        CamelContext context = exchng.getContext();
-                        ConsumerTemplate template = context.createConsumerTemplate();
-                        Object fileBody = template.receiveBody("file:/tmp/sent?fileName=" + exchng.getIn().getHeader("msgId"));
-                        log.info("file body: " + fileBody);
-                        exchng.getIn().setBody(fileBody);
-                    }
-                }).
+                process(new Processor() {
+
+            @Override
+            public void process(Exchange exchng) throws Exception {
+                log.info("Received exchange: " + exchng.getIn().getHeader(
+                        "msgId"));
+                CamelContext context = exchng.getContext();
+                ConsumerTemplate template = context.createConsumerTemplate();
+                Object fileBody = template.receiveBody("file:/tmp/sent?fileName=" + exchng.
+                        getIn().getHeader("msgId"));
+                log.info("file body: " + fileBody);
+                exchng.getIn().setBody(fileBody);
+            }
+        }).
                 to("log:file contents");
 
-    }
-
-    private Properties getConfig() throws IOException {
-        String userHome = System.getProperty("user.home");
-        String fileSeparator = System.getProperty("file.separator");
-        String configFilename = System.getProperty("soabp.config.path",
-                                                   userHome + fileSeparator + ".soabp" + fileSeparator + "config.properties");
-        Properties config = new Properties();
-        config.load(new FileInputStream(configFilename));
-        return config;
     }
 }

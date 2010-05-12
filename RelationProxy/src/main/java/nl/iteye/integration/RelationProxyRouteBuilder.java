@@ -16,17 +16,17 @@ public class RelationProxyRouteBuilder extends RouteBuilder {
 
     public void configure() {
         log.info("configuring RelationproxyRouteBuilder routes");
-        from("restlet:http://localhost:9080/relation/address?restletMethods=get,post,put,delete").
-                log("a log message").
+        from("restlet:http://localhost:9080/relation/{resourcePath}?restletMethods=get,post,put,delete").
                 to("log:relation.address.proxy.in").
-                to("restlet:http://" + relationServiceHost + ":" + relationServicePort + "/RelationRestService/webresources/address/1").
+                to("restlet:http://" + relationServiceHost + ":" + relationServicePort + "/RelationRestService/webresources/{resourcePath}").
                 to("log:relation.address.proxy.out").
                 setHeader("Content-Type", constant("text/xml"));
-        from("restlet:http://localhost:9080/relation/customer").
-                log("a log message").
-                to("log:relation.address.proxy.in").
+        /*
+        from("restlet:http://localhost:9080/relation/customer/{id}?restletMethods=get,post,put,delete").
+                to("log:relation.customer.proxy.in").
                 to("restlet:http://" + relationServiceHost + ":" + relationServicePort + "/RelationRestService/webresources/customer/1").
-                to("log:relation.address.proxy.out").
+                to("log:relation.customer.proxy.out").
                 setHeader("Content-Type", constant("text/xml"));
+         */
     }
 }

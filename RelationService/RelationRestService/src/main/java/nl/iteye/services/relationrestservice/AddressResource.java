@@ -22,7 +22,7 @@ public class AddressResource {
             getName());
 
     @GET
-    @Produces("text/xml")
+    @Produces({"text/xml","application/json"})
     public Address getAddress(@PathParam("id") int id) {
         log.info(">getAddress: " + id);
         Address address = new Address();

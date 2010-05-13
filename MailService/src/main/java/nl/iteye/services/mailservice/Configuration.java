@@ -22,7 +22,7 @@ public class Configuration {
             configuration = loadConfig();
         } catch (Exception e) {
             log.warning("Failed to load configuration");
-            e.printStackTrace();
+           //e.printStackTrace();
         }
     }
 

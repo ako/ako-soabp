@@ -16,12 +16,13 @@
     </dependency>
   </dependencies>
   <modules>
+    <module>Utils</module>
+    <module>MailService</module>
     <module>RelationService</module>
     <module>RelationProxy</module>
     <module>RelationComposite</module>
     <module>OrderApp</module>
     <module>NewOrderProcess</module>
     <module>RelationDb</module>
-    <module>Utils</module>
   </modules>
 </project>

@@ -6,6 +6,7 @@ package nl.iteye.services.mailservice;
 
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import nl.iteye.utils.Configuration;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
@@ -36,13 +37,16 @@ public class MailRouteBuilder extends RouteBuilder {
         String smtpPort = config.getProperty("smtp.port");
         boolean smtpUseSSL = config.getProperty("smtp.useSSL").equals(
                 "true");
+                String mailServiceBaseUrl = "http://" + config.getProperty("soabp.services.mail.host") + ":" +
+                        config.getProperty("soabp.services.mail.port") +
+                        config.getProperty("soabp.services.mail.contextRoot");
 
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
                 + "://" + smtpHost + ":" + smtpPort
                 + "?password=" + smtpPassword + "&username=" + smtpUsername;
         log.info(smtpUrl);
 
-        from("restlet://http://localhost:8786/mail/outbox?restletMethod=post").
+        from("restlet://" + mailServiceBaseUrl + "/outbox?restletMethod=post").
                 to("log:outbox.received?showAll=true").
                 to("file:/tmp/outboxfile").
                 multicast().
@@ -54,14 +58,22 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                setOutHeader("location", simple(
-                "http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Location", simple(
-                "http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Type", constant("application/xml")).
-                setOutHeader("CamelHttpResponseCode", constant(201)) //setBody(xpath("/mail/body"))
+                to("log:sent.mail")
+//                .setOutHeader("location", simple(
+//                "http://localhost:8786/mail/sent/${id}")).
+//                setOutHeader("Content-Location", simple(
+//                "http://localhost:8786/mail/sent/${id}")).
+//                setOutHeader("Content-Type", constant("application/xml")) /// .setBody(xpath("/mail/body")).
+                .process(
+                new Processor() {
+
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        exchange.getOut().setBody(exchange.getIn().getBody());
+                    }
+                }) //.setOutHeader("CamelHttpResponseCode", constant(201))
                 ;
-        from("restlet://http://localhost:8786/mail/sent/{id}?restletMethod=get").
+        from("restlet://" + mailServiceBaseUrl + "/sent/{id}?restletMethod=get").
                 to("log:outbox.get").
                 process(new Processor() {
 

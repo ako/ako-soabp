@@ -5,7 +5,6 @@
 package nl.iteye.services.mailservice;
 
 import java.util.logging.Logger;
-import javax.inject.Inject;
 import nl.iteye.utils.Configuration;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
@@ -13,7 +12,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.xpath;
-import static org.apache.camel.language.simple.SimpleLanguage.simple;
 
 /**
  *
@@ -26,8 +24,9 @@ public class MailRouteBuilder extends RouteBuilder {
 
     private static final Logger log = Logger.getLogger(MailRouteBuilder.class.
             getName());
-    @Inject
-    Configuration config;
+    // there seems to be a problem with @inject of classes defined in jars in
+    // the war/web-inf/lib folder, so for now we'll just instantiate the object
+    Configuration config = new Configuration();
 
     @Override
     public void configure() throws Exception {
@@ -37,16 +36,21 @@ public class MailRouteBuilder extends RouteBuilder {
         String smtpPort = config.getProperty("smtp.port");
         boolean smtpUseSSL = config.getProperty("smtp.useSSL").equals(
                 "true");
-                String mailServiceBaseUrl = "http://" + config.getProperty("soabp.services.mail.host") + ":" +
-                        config.getProperty("soabp.services.mail.port") +
-                        config.getProperty("soabp.services.mail.contextRoot");
+        String mailServiceBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host") + ":"
+                + config.getProperty("soabp.services.mail.port")
+                + config.getProperty("soabp.services.mail.contextRoot");
+        String mailServiceImplBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host.impl") + ":"
+                + config.getProperty("soabp.services.mail.port.impl")
+                + config.getProperty("soabp.services.mail.contextRoot.impl");
 
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
                 + "://" + smtpHost + ":" + smtpPort
                 + "?password=" + smtpPassword + "&username=" + smtpUsername;
         log.info(smtpUrl);
-
-        from("restlet://" + mailServiceBaseUrl + "/outbox?restletMethod=post").
+        log.info("Create mail route: " + mailServiceImplBaseUrl);
+        from("restlet://" + mailServiceImplBaseUrl + "/outbox?restletMethod=post").
                 to("log:outbox.received?showAll=true").
                 to("file:/tmp/outboxfile").
                 multicast().
@@ -58,12 +62,11 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                to("log:sent.mail")
-//                .setOutHeader("location", simple(
-//                "http://localhost:8786/mail/sent/${id}")).
-//                setOutHeader("Content-Location", simple(
-//                "http://localhost:8786/mail/sent/${id}")).
-//                setOutHeader("Content-Type", constant("application/xml")) /// .setBody(xpath("/mail/body")).
+                to("log:sent.mail") //                .setOutHeader("location", simple(
+                //                "http://localhost:8786/mail/sent/${id}")).
+                //                setOutHeader("Content-Location", simple(
+                //                "http://localhost:8786/mail/sent/${id}")).
+                //                setOutHeader("Content-Type", constant("application/xml")) /// .setBody(xpath("/mail/body")).
                 .process(
                 new Processor() {
 
@@ -73,7 +76,7 @@ public class MailRouteBuilder extends RouteBuilder {
                     }
                 }) //.setOutHeader("CamelHttpResponseCode", constant(201))
                 ;
-        from("restlet://" + mailServiceBaseUrl + "/sent/{id}?restletMethod=get").
+        from("restlet://" + mailServiceImplBaseUrl + "/sent/{id}?restletMethod=get").
                 to("log:outbox.get").
                 process(new Processor() {
 

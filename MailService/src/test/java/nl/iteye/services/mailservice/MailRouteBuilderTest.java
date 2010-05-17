@@ -29,6 +29,7 @@ public class MailRouteBuilderTest extends TestCase {
             getName());
     private CamelContext ctx;
     private Wiser smtpServer;
+    private Configuration config = null;
 
     @Override
     protected void setUp() throws Exception {
@@ -44,7 +45,7 @@ public class MailRouteBuilderTest extends TestCase {
         MailRouteBuilder mrb = new MailRouteBuilder();
         System.setProperty("soabp.config",
                            "classpath:/soabp-config.properties");
-        Configuration config = new Configuration();
+        config = new Configuration();
         mrb.config = config;
         ctx.addRoutes(mrb);
         ctx.start();
@@ -63,52 +64,56 @@ public class MailRouteBuilderTest extends TestCase {
         super(testName);
     }
 
-    public void xtestConfigure() throws Exception {
-        Wiser smtpServer = null;
-        try {
+    public void testConfigure() throws Exception {
 
 
-            Client client = new Client();
-            String mailMsg = "<mail><to>x@y.net</to><subject>Test</subject><body>HelloWorld</body></mail>";
-            WebResource resource = client.resource(
-                    "http://localhost:8786/mail/outbox");
-            ClientResponse response = resource.post(ClientResponse.class,
-                                                    mailMsg);
-            Status status = response.getClientResponseStatus();
-            log.info("Response status: " + status);
-            //assertEquals(status.CREATED, status);
-            String responseData = response.getEntity(String.class);
-            log.info("result from post to outbox:" + responseData);
-            assertEquals(mailMsg, responseData);
 
-            // check mail received
-            WiserMessage receivedMail = smtpServer.getMessages().get(0);
-            log.info("wiser message: " + smtpServer.getMessages().get(0));
-            MimeMessage mailContent = receivedMail.getMimeMessage();
-            Object content = mailContent.getContent();
-            log.info("mail content: " + content);
 
-            // test sentMail resources
-            //    WebResource resource2 = client.resource(response.getLocation());
-            //  String result2 = resource2.get(String.class);
-            //log.info("result 2: " + result2);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-        }
+        Client client = new Client();
+        String mailMsg = "<mail><to>x@y.net</to><subject>Test</subject><body>HelloWorld</body></mail>";
+        String mailServiceBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host") + ":"
+                + config.getProperty("soabp.services.mail.port")
+                + config.getProperty("soabp.services.mail.contextRoot");
+        WebResource resource = client.resource(
+                mailServiceBaseUrl + "/outbox");
+        ClientResponse response = resource.post(ClientResponse.class,
+                                                mailMsg);
+        Status status = response.getClientResponseStatus();
+        log.info("Response status: " + status);
+        //assertEquals(status.CREATED, status);
+        String responseData = response.getEntity(String.class);
+        log.info("result from post to outbox:" + responseData);
+        assertEquals(mailMsg, responseData);
+
+        // check mail received
+        WiserMessage receivedMail = smtpServer.getMessages().get(0);
+        log.info("wiser message: " + receivedMail);
+        // MimeMessage mailContent = receivedMail.getMimeMessage();
+        // Object content = mailContent.getContent();
+        // log.info("mail content: " + content);
+
+        // test sentMail resources
+        //    WebResource resource2 = client.resource(response.getLocation());
+        //  String result2 = resource2.get(String.class);
+        //log.info("result 2: " + result2);
+
     }
 
     public void testJaxbData() throws Exception {
         Client client = new Client();
         //       String mailMsg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<mail><body>HelloWorld!</body><subject>test</subject><to>x@y.net</to></mail>";
+        String mailServiceBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host") + ":"
+                + config.getProperty("soabp.services.mail.port")
+                + config.getProperty("soabp.services.mail.contextRoot");
         String mailMsg = "<mail><body>HelloWorld!</body><subject>test</subject><to>x@y.net</to></mail>";
         MailMessage msg = new MailMessage();
         msg.setTo("x@y.net");
         msg.setSubject("test");
         msg.setBody("HelloWorld!");
         WebResource resource = client.resource(
-                "http://localhost:8786/mail/outbox");
+                mailServiceBaseUrl + "/outbox");
         //        "http://localhost:7676/mail/outbox");
         ClientResponse response = resource.type(MediaType.APPLICATION_XML).post(
                 ClientResponse.class, mailMsg);

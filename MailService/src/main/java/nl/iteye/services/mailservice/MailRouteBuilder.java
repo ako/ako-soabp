@@ -11,6 +11,7 @@ import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.restlet.data.Form;
 import static org.apache.camel.builder.xml.XPathBuilder.xpath;
 
 /**
@@ -26,7 +27,16 @@ public class MailRouteBuilder extends RouteBuilder {
             getName());
     // there seems to be a problem with @inject of classes defined in jars in
     // the war/web-inf/lib folder, so for now we'll just instantiate the object
-    Configuration config = new Configuration();
+    private Configuration config = new Configuration();
+
+    public Configuration getConfig() {
+        return config;
+    }
+
+    public void setConfig(Configuration config) {
+        log.info(">setConfig: " + config);
+        this.config = config;
+    }
 
     @Override
     public void configure() throws Exception {
@@ -48,7 +58,7 @@ public class MailRouteBuilder extends RouteBuilder {
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
                 + "://" + smtpHost + ":" + smtpPort
                 + "?password=" + smtpPassword + "&username=" + smtpUsername;
-        log.info(smtpUrl);
+        log.info("Using mail endpoint: " + smtpUrl);
         log.info("Create mail route: " + mailServiceImplBaseUrl);
         from("restlet://" + mailServiceImplBaseUrl + "/outbox?restletMethod=post").
                 to("log:outbox.received?showAll=true").
@@ -62,19 +72,27 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                to("log:sent.mail") //                .setOutHeader("location", simple(
-                //                "http://localhost:8786/mail/sent/${id}")).
-                //                setOutHeader("Content-Location", simple(
-                //                "http://localhost:8786/mail/sent/${id}")).
-                //                setOutHeader("Content-Type", constant("application/xml")) /// .setBody(xpath("/mail/body")).
-                .process(
-                new Processor() {
-
+                to("log:sent.mail")
+                .process( new Processor() {
                     @Override
                     public void process(Exchange exchange) throws Exception {
-                        exchange.getOut().setBody(exchange.getIn().getBody());
+                        String mailLocation = "http://localhost:8786/mail/sent/" + exchange.
+                                getIn().getMessageId();
+                        exchange.getOut().setBody(exchange.getIn().getBody() );
+                        exchange.getOut().setHeader(Exchange.CONTENT_TYPE,
+                                                    "application/xml");
+                        exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 201);
+                        Form responseHeaders = new Form();
+                        responseHeaders.add("X-Content-Location" , mailLocation);
+                        responseHeaders.add("Location" , mailLocation);
+                        responseHeaders.add("Content-Location" , mailLocation);
+                        responseHeaders.add("response.locationRef" , mailLocation);
+                        responseHeaders.add("entity.identifier" , mailLocation);
+                        exchange.getOut().setHeader("org.restlet.http.headers", responseHeaders );
+                        exchange.getOut().setHeader("org.restlet.entity.identifier", responseHeaders );
+                        exchange.getOut().setHeader("response.locationRef", responseHeaders );
                     }
-                }) //.setOutHeader("CamelHttpResponseCode", constant(201))
+                })
                 ;
         from("restlet://" + mailServiceImplBaseUrl + "/sent/{id}?restletMethod=get").
                 to("log:outbox.get").

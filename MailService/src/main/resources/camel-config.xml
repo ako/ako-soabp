@@ -4,10 +4,12 @@
        xsi:schemaLocation="
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-           <!--
-    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-        <package>nl.iteye.services.mailservice</package>
-    </camelContext>
+
     <bean id="configuration" class="nl.iteye.utils.Configuration"></bean>
-    -->
+    <bean id="mailServiceRoute" class="nl.iteye.services.mailservice.MailRouteBuilder">
+        <property name="config" ref="configuration" />
+    </bean>
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <routeBuilder ref="mailServiceRoute"/>
+    </camelContext>
 </beans>

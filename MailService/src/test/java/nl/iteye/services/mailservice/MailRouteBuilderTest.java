@@ -46,7 +46,7 @@ public class MailRouteBuilderTest extends TestCase {
         System.setProperty("soabp.config",
                            "classpath:/soabp-config.properties");
         config = new Configuration();
-        mrb.config = config;
+        mrb.setConfig (config);
         ctx.addRoutes(mrb);
         ctx.start();
 

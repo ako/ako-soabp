@@ -5,14 +5,14 @@
 package nl.iteye.services.mailservice;
 
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import nl.iteye.utils.Configuration;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.restlet.data.Form;
 import static org.apache.camel.builder.xml.XPathBuilder.xpath;
-import static org.apache.camel.language.simple.SimpleLanguage.simple;
 
 /**
  *
@@ -25,8 +25,18 @@ public class MailRouteBuilder extends RouteBuilder {
 
     private static final Logger log = Logger.getLogger(MailRouteBuilder.class.
             getName());
-    @Inject
-    Configuration config;
+    // there seems to be a problem with @inject of classes defined in jars in
+    // the war/web-inf/lib folder, so for now we'll just instantiate the object
+    private Configuration config = new Configuration();
+
+    public Configuration getConfig() {
+        return config;
+    }
+
+    public void setConfig(Configuration config) {
+        log.info(">setConfig: " + config);
+        this.config = config;
+    }
 
     @Override
     public void configure() throws Exception {
@@ -36,13 +46,21 @@ public class MailRouteBuilder extends RouteBuilder {
         String smtpPort = config.getProperty("smtp.port");
         boolean smtpUseSSL = config.getProperty("smtp.useSSL").equals(
                 "true");
+        String mailServiceBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host") + ":"
+                + config.getProperty("soabp.services.mail.port")
+                + config.getProperty("soabp.services.mail.contextRoot");
+        String mailServiceImplBaseUrl = "http://" + config.getProperty(
+                "soabp.services.mail.host.impl") + ":"
+                + config.getProperty("soabp.services.mail.port.impl")
+                + config.getProperty("soabp.services.mail.contextRoot.impl");
 
         String smtpUrl = "smtp" + (smtpUseSSL ? "s" : "")
                 + "://" + smtpHost + ":" + smtpPort
                 + "?password=" + smtpPassword + "&username=" + smtpUsername;
-        log.info(smtpUrl);
-
-        from("restlet://http://localhost:8786/mail/outbox?restletMethod=post").
+        log.info("Using mail endpoint: " + smtpUrl);
+        log.info("Create mail route: " + mailServiceImplBaseUrl);
+        from("restlet://" + mailServiceImplBaseUrl + "/outbox?restletMethod=post").
                 to("log:outbox.received?showAll=true").
                 to("file:/tmp/outboxfile").
                 multicast().
@@ -54,14 +72,29 @@ public class MailRouteBuilder extends RouteBuilder {
                 to(smtpUrl);
         from("direct:storeSentMail").
                 to("file:/tmp/sent").
-                setOutHeader("location", simple(
-                "http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Location", simple(
-                "http://localhost:8786/mail/sent/${id}")).
-                setOutHeader("Content-Type", constant("application/xml")).
-                setOutHeader("CamelHttpResponseCode", constant(201)) //setBody(xpath("/mail/body"))
+                to("log:sent.mail")
+                .process( new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        String mailLocation = "http://localhost:8786/mail/sent/" + exchange.
+                                getIn().getMessageId();
+                        exchange.getOut().setBody(exchange.getIn().getBody() );
+                        exchange.getOut().setHeader(Exchange.CONTENT_TYPE,
+                                                    "application/xml");
+                        exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, 201);
+                        Form responseHeaders = new Form();
+                        responseHeaders.add("X-Content-Location" , mailLocation);
+                        responseHeaders.add("Location" , mailLocation);
+                        responseHeaders.add("Content-Location" , mailLocation);
+                        responseHeaders.add("response.locationRef" , mailLocation);
+                        responseHeaders.add("entity.identifier" , mailLocation);
+                        exchange.getOut().setHeader("org.restlet.http.headers", responseHeaders );
+                        exchange.getOut().setHeader("org.restlet.entity.identifier", responseHeaders );
+                        exchange.getOut().setHeader("response.locationRef", responseHeaders );
+                    }
+                })
                 ;
-        from("restlet://http://localhost:8786/mail/sent/{id}?restletMethod=get").
+        from("restlet://" + mailServiceImplBaseUrl + "/sent/{id}?restletMethod=get").
                 to("log:outbox.get").
                 process(new Processor() {
 

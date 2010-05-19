@@ -16,6 +16,8 @@
     </dependency>
   </dependencies>
   <modules>
+    <module>Utils</module>
+    <module>MailService</module>
     <module>RelationService</module>
     <module>RelationProxy</module>
     <module>RelationComposite</module>

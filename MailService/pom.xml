@@ -1,6 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>SoaBlueprint</artifactId>
+        <groupId>nl.iteye.services</groupId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
     <groupId>nl.iteye.services</groupId>
     <artifactId>MailService</artifactId>
     <packaging>war</packaging>
@@ -14,6 +19,27 @@
             <url>http://maven.restlet.org</url>
         </repository>
     </repositories>
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- EXAMPLE FOR MYSQL -->
+                <sonar.jdbc.url>
+                    jdbc:postgresql://localhost:5432/sonar
+                </sonar.jdbc.url>
+                <sonar.jdbc.driver>org.postgresql.Driver</sonar.jdbc.driver>
+                <sonar.jdbc.username>sonar</sonar.jdbc.username>
+                <sonar.jdbc.password>sonar</sonar.jdbc.password>
+
+                <!-- SERVER ON A REMOTE HOST -->
+                <sonar.host.url>http://localhost:7002</sonar.host.url>
+            </properties>
+        </profile>
+
+    </profiles>
     <build>
         <plugins>
             <plugin>
@@ -53,7 +79,7 @@
             <artifactId>camel-spring</artifactId>
             <version>${camel-version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-restlet</artifactId>
@@ -97,9 +123,23 @@
             <version>6.0</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>nl.iteye</groupId>
+            <artifactId>Utils</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.6</version>
+        </dependency>
     </dependencies>
     <properties>
         <jersey-version>1.1.5.1</jersey-version>
         <camel-version>2.2.0</camel-version>
     </properties>
 </project>
+
+
+
+

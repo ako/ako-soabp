@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Deployment-macros" default="default" basedir=".">
+    <description>Macros used for deployment</description>
+    <path id="tool.path">
+        <pathelement location="${user.home}/.m2/repository/org/codehaus/groovy/groovy-all/1.7.2/groovy-all-1.7.2.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/apache/ivy/ivy/2.1.0/ivy-2.1.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/codehaus/groovy/modules/http-builder/http-builder/0.5.0/http-builder-0.5.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.jar"/>
+    </path>
+    <property file="build.properties"/>
+    <taskdef name="groovy"
+             classname="org.codehaus.groovy.ant.Groovy"
+             classpathref="tool.path"/>
+    <macrodef name="gf-redeploy-war">
+        <attribute name="warFile"/>
+        <attribute name="appName"/>
+        <attribute name="host" default="localhost"/>
+        <attribute name="adminPort" default="4848"/>
+        <attribute name="adminUser" default="admin"/>
+        <attribute name="adminPasswordFile" default="${basedir}/passwords.properties"/>
+        <sequential>
+            <java classname="com.sun.enterprise.admin.cli.AsadminMain" fork="true" classpathref="tool.path">
+                <arg line="--user @{adminUser}"/>
+                <arg line="--interactive=false"/>
+                <arg line="--host @{host}"/>
+                <arg line="--port @{adminPort}"/>
+                <arg line="--passwordfile @{adminPasswordFile}"/>
+                <arg line="redeploy"/>
+                <arg line="--name @{appName}"/>
+                <arg line="@{warFile}"/>
+            </java>
+        </sequential>
+    </macrodef>
+    <macrodef name="gf-undeploy-war">
+        <attribute name="warFile"/>
+        <attribute name="appName"/>
+        <attribute name="host" default="localhost"/>
+        <attribute name="adminPort" default="4848"/>
+        <attribute name="adminUser" default="admin"/>
+        <attribute name="adminPasswordFile" default="${basedir}/passwords.properties"/>
+        <sequential>
+            <java classname="com.sun.enterprise.admin.cli.AsadminMain" fork="true" classpathref="tool.path">
+                <arg line="--user @{adminUser}"/>
+                <arg line="--interactive=false"/>
+                <arg line="--host @{host}"/>
+                <arg line="--port @{adminPort}"/>
+                <arg line="--passwordfile @{adminPasswordFile}"/>
+                <arg line="undeploy"/>
+                <arg line="@{appName}"/>
+            </java>
+        </sequential>
+    </macrodef>
+    <macrodef name="gf-deploy-war">
+        <attribute name="warFile"/>
+        <attribute name="appName"/>
+        <attribute name="host" default="localhost"/>
+        <attribute name="adminPort" default="4848"/>
+        <attribute name="adminUser" default="admin"/>
+        <attribute name="adminPasswordFile" default="${basedir}/passwords.properties"/>
+        <sequential>
+            <java classname="com.sun.enterprise.admin.cli.AsadminMain" fork="true" classpathref="tool.path">
+                <arg line="--user @{adminUser}"/>
+                <arg line="--interactive=false"/>
+                <arg line="--host @{host}"/>
+                <arg line="--port @{adminPort}"/>
+                <arg line="--passwordfile @{adminPasswordFile}"/>
+                <arg line="deploy"/>
+                <arg line="--name @{appName}"/>
+                <arg line="@{warFile}"/>
+            </java>
+        </sequential>
+    </macrodef>
+    <macrodef name="pgsql-deploy">
+        <attribute name="zipFile"/>
+        <attribute name="jdbcUrl"/>
+        <attribute name="version"/>
+        <attribute name="dbUsername"/>
+        <attribute name="dbPassword"/>
+        <sequential>
+            <delete dir="${java.io.tmpdir}/pgsql-deploy" quiet="true"/>
+            <copy file="@{zipFile}" todir="${java.io.tmpdir}/pgsql-deploy"/>
+            <unzip dest="${java.io.tmpdir}/pgsql-deploy">
+                <fileset dir="${java.io.tmpdir}/pgsql-deploy">
+                    <include name="*.zip"/>
+                </fileset>
+            </unzip>
+            <sql driver="org.postgresql.Driver"
+                 userid="@{dbUsername}"
+                 password="@{dbPassword}"
+                 url="@{jdbcUrl}"
+                 classpathref="tool.path" onerror="stop">
+                <path>
+                    <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/drop-schema.sql"/>
+                    <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/create-schema.sql"/>
+                    <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/validate-schema.sql"/>
+                </path>
+            </sql>
+        </sequential>
+    </macrodef>
+</project>

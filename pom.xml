@@ -24,5 +24,8 @@
     <module>OrderApp</module>
     <module>NewOrderProcess</module>
     <module>RelationDb</module>
+    <module>Deployment-deps</module>
+    <module>BpmnToCamelMojo</module>
+    <module>NewOrderBpmnProcess</module>
   </modules>
 </project>

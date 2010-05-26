@@ -18,7 +18,7 @@ import static org.apache.camel.builder.xml.XPathBuilder.xpath;
  *
  * @author andrej
  *
- *  curl -d "<mail><to>andrej@koelewijn.net</to><subject>Test</subject><body>HelloWorld</body></mail>" -X POST http://localhost:8786/mail/outbox
+ *  url -d "<mail><to>andrej@koelewijn.net</to><subject>Test</subject><body>HelloWorld</body></mail>" -X POST http://localhost:8786/mail/outbox
 
  */
 public class MailRouteBuilder extends RouteBuilder {

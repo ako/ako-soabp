@@ -2,22 +2,23 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package nl.iteye.webapps.orderapp;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.util.logging.Logger;
+import junit.framework.TestCase;
 
 /**
  *
  * @author andrej
  */
-public class RelationClientTest {
+public class RelationClientTest  extends TestCase {
+
+    private static final Logger log = Logger.getLogger(RelationClientTest.class.getName());
 
     public RelationClientTest() {
     }
 
-
+    public void testGetCustomerResource() {
+        log.info("testGetCustomerResource");
+    }
 }

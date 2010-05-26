@@ -45,7 +45,7 @@
                 <!-- common configuration shared by all executions -->
                 <configuration>
                     <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5432:devdb</url>
+                    <url>jdbc:postgresql://localhost:5433:dev</url>
                     <username>dev</username>
                     <password>dev</password>
                     <!-- You can comment out username/password configurations and

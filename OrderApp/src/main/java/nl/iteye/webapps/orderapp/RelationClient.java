@@ -21,9 +21,9 @@ import nl.iteye.webapps.orderapp.model.Customer;
 @RequestScoped
 public class RelationClient {
 
-    private static final int relationSvcPort = 9080;
+    private static final int relationSvcPort = 8080;
     private static final String relationSvcHost = "localhost";
-    private static final String relationSvcPath = "relation";
+    private static final String relationSvcPath = "RelationRestService/webresources";
     private static final Logger log = Logger.getLogger(RelationClient.class.getName());
     private Address address;
     private Customer customer;

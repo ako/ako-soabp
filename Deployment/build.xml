@@ -8,6 +8,8 @@
         <pathelement location="${user.home}/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.jar"/>
         <pathelement location="${user.home}/.m2/repository/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.jar"/>
     </path>
+    <property file="build-${user.name}.properties"/>
+    <property file="build-${profile.name}.properties"/>
     <property file="build.properties"/>
     <taskdef name="groovy"
              classname="org.codehaus.groovy.ant.Groovy"
@@ -62,10 +64,18 @@
             />
     </target>
     <target name="deploy-relation-db">
-        <pgsql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
+<!--
+        <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
             jdbcUrl="jdbc:postgresql://localhost/dev"
             dbUsername="dev"
             dbPassword="dev"
+            version="1.0"/>
+-->
+        <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
+            dbUsername="dev"
+            dbPassword="dev"
+            databaseHost="localhost"
+            databaseName="dev"
             version="1.0"/>
     </target>
     <target name="list-as-applications">

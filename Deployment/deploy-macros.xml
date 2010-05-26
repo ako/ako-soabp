@@ -8,7 +8,6 @@
         <pathelement location="${user.home}/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.jar"/>
         <pathelement location="${user.home}/.m2/repository/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.jar"/>
     </path>
-    <property file="build.properties"/>
     <taskdef name="groovy"
              classname="org.codehaus.groovy.ant.Groovy"
              classpathref="tool.path"/>
@@ -96,6 +95,67 @@
                     <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/validate-schema.sql"/>
                 </path>
             </sql>
+        </sequential>
+    </macrodef>
+    <macrodef name="psql-deploy">
+        <attribute name="zipFile"/>
+        <attribute name="databaseHost"/>
+        <attribute name="databaseName"/>
+        <attribute name="version"/>
+        <attribute name="dbUsername"/>
+        <attribute name="dbPassword"/>
+        <sequential>
+            <delete dir="${java.io.tmpdir}/pgsql-deploy" quiet="true"/>
+            <copy file="@{zipFile}" todir="${java.io.tmpdir}/pgsql-deploy"/>
+            <unzip dest="${java.io.tmpdir}/pgsql-deploy">
+                <fileset dir="${java.io.tmpdir}/pgsql-deploy" includes="*.zip"/>
+            </unzip>
+            <path id="db.drop.script">
+                <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/drop-schema.sql"/>
+            </path>
+            <path id="db.create.script">
+                <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/create-schema.sql"/>
+            </path>
+            <path id="db.validate.script">
+                <fileset dir="${java.io.tmpdir}/pgsql-deploy/" includes="**/@{version}/validate-schema.sql"/>
+            </path>
+            <psql sqlFile="${toString:db.drop.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+            <psql sqlFile="${toString:db.create.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+            <psql sqlFile="${toString:db.validate.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+        </sequential>
+    </macrodef>
+    <macrodef name="psql">
+        <attribute name="sqlFile"/>
+        <attribute name="databaseHost" default="localhost"/>
+        <attribute name="databasePort" default="5432"/>
+        <attribute name="databaseName"/>
+        <attribute name="dbUsername"/>
+        <attribute name="dbPassword"/>
+        <sequential>
+            <exec executable="${psql.path}">
+                <arg line="-d @{databaseName}"/>
+                <arg line="-h @{databaseHost}"/>
+                <arg line="-p @{databasePort}"/>
+                <arg line="-U @{dbUsername}"/>
+                <arg line="-w"/>
+                <arg line="-f @{sqlFile}"/>
+                <env key="PGPASSWORD" value="@{dbPassword}"/>
+            </exec>
         </sequential>
     </macrodef>
 </project>

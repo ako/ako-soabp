@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Deployment" default="default" basedir=".">
+    <description>Builds, tests, and runs the project Deployment.</description>
+    <path id="tool.path">
+        <pathelement location="${user.home}/.m2/repository/org/codehaus/groovy/groovy-all/1.7.2/groovy-all-1.7.2.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/apache/ivy/ivy/2.1.0/ivy-2.1.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/codehaus/groovy/modules/http-builder/http-builder/0.5.0/http-builder-0.5.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.jar"/>
+        <pathelement location="${user.home}/.m2/repository/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.jar"/>
+    </path>
+    <property file="build-${user.name}.properties"/>
+    <property file="build-${profile.name}.properties"/>
+    <property file="build.properties"/>
+    <taskdef name="groovy"
+             classname="org.codehaus.groovy.ant.Groovy"
+             classpathref="tool.path"/>
+    <import file="deploy-macros.xml"/>
+    <target name="deploy-war-asadmin">
+        <groovy>
+            <![CDATA[
+            println "Deploying war"
+            def asAdmin = "/Applications/NetBeans/sges-v3/bin/asadmin"
+            def warFile = "${properties['user.home']}/.m2/repository/nl/iteye/services/MailService/0.1-SNAPSHOT/MailService-0.1-SNAPSHOT.war"
+            //def proc = [asAdmin,"--interactive=false","--port","12541","--user","anonymous","--passwordfile","${properties['basedir']}/passwords.properties","redeploy","--name","nl.iteye.services_MailService_war_0.1-SNAPSHOT",warFile].execute()
+            def proc = [asAdmin,"--interactive=false","--port","12541","--user","anonymous","--passwordfile","${properties['basedir']}/passwords.properties","deploy",warFile].execute()
+            println "Proc: ${proc.err.text} ${proc.in.text}"
+            ]]>
+        </groovy>
+    </target>
+    <target name="deploy-war-java">
+        <groovy>
+            <![CDATA[
+            def warFile = "${properties['user.home']}/.m2/repository/nl/iteye/services/MailService/0.1-SNAPSHOT/MailService-0.1-SNAPSHOT.war"
+            println "Deploying ${warFile}"
+            def ant = new AntBuilder()
+            ant.java ( classname:"com.sun.enterprise.admin.cli.AsadminMain"
+                     , classpath:"${properties['user.home']}/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.0/glassfish-embedded-all-3.0.jar"
+                     , fork:true
+                     ){
+                        arg(line:"--user anonymous")
+                        arg(line:"--interactive=false")
+                        arg(line:"--port 12541")
+                        arg(line:"--passwordfile ${properties['basedir']}/passwords.properties")
+                        arg(line:"redeploy")
+                        arg(line:"--name MailService-0.1-SNAPSHOT")
+                        arg(line:warFile)
+                     }
+            println "Done deploying ${warFile}"
+            ]]>
+        </groovy>
+    </target>
+    <target name="deploy-mailservice-war">
+        <gf-undeploy-war
+            warFile="${user.home}/.m2/repository/nl/iteye/services/MailService/0.1-SNAPSHOT/MailService-0.1-SNAPSHOT.war"
+            adminPort="${glassfish.admin.port}"
+            adminUser="anonymous"
+            appName="MailService-1.0"
+            />
+        <gf-deploy-war
+            warFile="${user.home}/.m2/repository/nl/iteye/services/MailService/0.1-SNAPSHOT/MailService-0.1-SNAPSHOT.war"
+            adminPort="${glassfish.admin.port}"
+            adminUser="anonymous"
+            appName="MailService-1.0"
+            />
+    </target>
+    <target name="deploy-relation-db">
+<!--
+        <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
+            jdbcUrl="jdbc:postgresql://localhost/dev"
+            dbUsername="dev"
+            dbPassword="dev"
+            version="1.0"/>
+-->
+        <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
+            dbUsername="dev"
+            dbPassword="dev"
+            databaseHost="localhost"
+            databaseName="dev"
+            version="1.0"/>
+    </target>
+    <target name="list-as-applications">
+        <groovy>
+            <![CDATA[
+            println "Listing applications installed on application server"
+
+            import static groovyx.net.http.ContentType.JSON
+            import groovyx.net.http.RESTClient
+            String host = "http://${properties['glassfish.host']}:${properties['glassfish.admin.port']}"
+            String appPath = "/management/domain/applications/application"
+            println "Using url: ${host}"
+            def gf = new RESTClient(host)
+            def result = gf.get(path:appPath, contentType: JSON)
+            println result.data
+            result.data.Application.ChildResources.each {
+                println "Application: ${it}"
+            }
+            println "posting war"
+            println ""
+            def warFile = new File("${properties['user.home']}/.m2/repository/nl/iteye/services/MailService/0.1-SNAPSHOT/MailService-0.1-SNAPSHOT.war")
+            gf.post(path:appPath,body:warFile.bytes)
+            ]]>
+        </groovy>
+    </target>
+</project>

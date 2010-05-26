@@ -158,4 +158,60 @@
             </exec>
         </sequential>
     </macrodef>
+    <macrodef name="sqlplus-deploy">
+        <attribute name="zipFile"/>
+        <attribute name="databaseHost"/>
+        <attribute name="databaseName"/>
+        <attribute name="version"/>
+        <attribute name="dbUsername"/>
+        <attribute name="dbPassword"/>
+        <sequential>
+            <delete dir="${java.io.tmpdir}/sql-deploy" quiet="true"/>
+            <copy file="@{zipFile}" todir="${java.io.tmpdir}/sql-deploy"/>
+            <unzip dest="${java.io.tmpdir}/sql-deploy">
+                <fileset dir="${java.io.tmpdir}/sql-deploy" includes="*.zip"/>
+            </unzip>
+            <path id="db.drop.script">
+                <fileset dir="${java.io.tmpdir}/sql-deploy/" includes="**/@{version}/drop_schema.sql"/>
+            </path>
+            <path id="db.create.script">
+                <fileset dir="${java.io.tmpdir}/sql-deploy/" includes="**/@{version}/create_schema.sql"/>
+            </path>
+            <path id="db.validate.script">
+                <fileset dir="${java.io.tmpdir}/sql-deploy/" includes="**/@{version}/validate_schema.sql"/>
+            </path>
+            <sqlplus sqlFile="${toString:db.drop.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+            <sqlplus sqlFile="${toString:db.create.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+            <sqlplus sqlFile="${toString:db.validate.script}"
+                  databaseHost="@{databaseHost}"
+                  databaseName="@{databaseName}"
+                  dbUsername="@{dbUsername}"
+                  dbPassword="@{dbPassword}"
+                  />
+        </sequential>
+    </macrodef>
+    <macrodef name="sqlplus">
+        <attribute name="sqlFile"/>
+        <attribute name="databaseHost" default="localhost"/>
+        <attribute name="databasePort" default="1521"/>
+        <attribute name="databaseName" default="XE"/>
+        <attribute name="dbUsername"/>
+        <attribute name="dbPassword"/>
+        <sequential>
+            <exec executable="${sqlplus.path}">
+                <arg line="@{dbUsername}/@{dbPassword}@@//@{databaseHost}:@{databasePort}/@{databaseName}"/>
+                <arg line="@@@{sqlFile}"/>
+            </exec>
+        </sequential>
+    </macrodef>
 </project>

@@ -28,5 +28,6 @@
     <module>Deployment-deps</module>
     <module>BpmnToCamelMojo</module>
     <module>NewOrderBpmnProcess</module>
+    <module>OrderDb</module>
   </modules>
 </project>

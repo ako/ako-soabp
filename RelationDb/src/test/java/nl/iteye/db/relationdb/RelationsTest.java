@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  * Unit test for simple App.
@@ -16,14 +17,17 @@ public class RelationsTest extends TestCase {
                 System.getProperty("relation.db.url"), System.getProperty("relation.db.username"), System.getProperty("relation.db.password"));
 
         Statement stmt = connection.createStatement();
-        stmt.executeUpdate("delete from rel_relations");
-        stmt.executeUpdate("insert into rel_relations values (1,'Koos Koets')");
+        stmt.executeUpdate("delete from relations");
+        stmt.executeUpdate("insert into relations (id,firstname, lastname) values (1,'Koos','Koets')");
 
-        ResultSet rset = stmt.executeQuery("select * from rel_relations");
+        ResultSet rset = stmt.executeQuery("select * from relations");
         while (rset.next()) {
             long id = rset.getLong("ID");
-            String name = rset.getString("NAME");
-            System.out.println("Record: " + id + ", " + name);
+            String firstname = rset.getString("FIRSTNAME");
+            String lastname = rset.getString("LASTNAME");
+            System.out.println("Record: " + id + ", " + firstname +", " + lastname);
+            Assert.assertEquals("Koos", firstname);
+            Assert.assertEquals("Koets",lastname);
         }
         stmt.close();
         connection.close();

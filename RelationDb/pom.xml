@@ -46,7 +46,7 @@
                 <!-- common configuration shared by all executions -->
                 <configuration>
                     <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5433:dev</url>
+                    <url>jdbc:postgresql://localhost:5432:dev</url>
                     <username>dev</username>
                     <password>dev</password>
                     <!--all executions are ignored if -Dmaven.test.skip=true-->
@@ -66,21 +66,8 @@
                             <srcFiles>
                                 <srcFile>src/main/sql/1.0/drop-schema.sql</srcFile>
                                 <srcFile>src/main/sql/1.0/create-schema.sql</srcFile>
-                            </srcFiles>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>test-schema</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <autocommit>true</autocommit>
-                            <onError>continue</onError>
-                            <srcFiles>
-                                <srcFile>src/main/sql/1.0/test-data.sql</srcFile>
-                                <srcFile>src/main/sql/1.0/test-schema.sql</srcFile>
+                                <srcFile>src/main/sql/1.0/validate-schema.sql</srcFile>
+                                <srcFile>src/main/sql/1.0/initialize-data.sql</srcFile>
                             </srcFiles>
                         </configuration>
                     </execution>
@@ -89,7 +76,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.3</version>
                 <configuration>
                     <systemProperties>
                         <property>
@@ -109,7 +95,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.1</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/dbzip.xml</descriptor>

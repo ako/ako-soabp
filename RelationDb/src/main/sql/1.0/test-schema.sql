@@ -1,1 +1,0 @@
-select * from rel_relations;

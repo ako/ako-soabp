@@ -13,7 +13,7 @@
     <packaging>war</packaging>
     <name>NewOrderBpmnProcess</name>
     <description>New Order Bpmn Process, implemented as a camel route</description>
-    <url>http://www.myorganization.org</url>
+    <url>http://www.iteye.nl/</url>
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>
@@ -102,10 +102,4 @@
             <version>${camel-version}</version>
         </dependency>
     </dependencies>
-    <properties>
-        <activemq-version>5.3.0</activemq-version>
-        <camel-version>2.2.0</camel-version>
-        <jetty-version>6.1.22</jetty-version>
-        <xbean-spring-version>3.5</xbean-spring-version>
-    </properties>
 </project>

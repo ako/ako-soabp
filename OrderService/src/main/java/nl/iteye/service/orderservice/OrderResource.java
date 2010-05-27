@@ -11,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import nl.iteye.service.orderservice.dao.OrderDao;
 
 /**
  *
@@ -25,6 +26,8 @@ public class OrderResource {
     @Produces({"text/xml","application/json"})
     public Order getOrder(@PathParam("id") int id) {
         log.info(">getOrder: " + id);
-        return new Order();
+        OrderDao dao = new OrderDao();
+        Order order = dao.getOrderById(new Long(id));
+        return order;
     }
 }

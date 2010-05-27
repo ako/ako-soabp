@@ -9,11 +9,11 @@ import junit.framework.TestCase;
 /**
  * Unit test for simple App.
  */
-public class AppTest extends TestCase {
+public class RelationsTest extends TestCase {
 
     public void testRelations() throws Exception {
         Connection connection = DriverManager.getConnection(
-                "jdbc:postgresql://localhost/dev", "dev", "dev");
+                System.getProperty("relation.db.url"), System.getProperty("relation.db.username"), System.getProperty("relation.db.password"));
 
         Statement stmt = connection.createStatement();
         stmt.executeUpdate("delete from rel_relations");

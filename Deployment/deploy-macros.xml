@@ -209,29 +209,71 @@
         <attribute name="dbPassword"/>
         <sequential>
             <exec executable="${sqlplus.path}">
+                <echo>Running Oracle Sql script @{sqlFile}</echo>
                 <arg line="@{dbUsername}/@{dbPassword}@@//@{databaseHost}:@{databasePort}/@{databaseName}"/>
                 <arg line="@@@{sqlFile}"/>
             </exec>
         </sequential>
     </macrodef>
-    <macrodef name="esb-osgi-bundle-deploy">
+    <macrodef name="smx-osgi-bundle-deploy">
         <attribute name="bundleUrl"/>
-        <attribute name="esbHost"/>
+        <attribute name="smxHost" default="localhost"/>
+        <attribute name="smxSshPort" default="8101"/>
+        <attribute name="smxAdminUsername" default="karaf"/>
+        <attribute name="smxAdminPassword" default="karaf"/>
         <sequential>
-            <echo>deploying osgi bundle @{bundleUrl} to @{esbHost}</echo>
+            <echo>deploying osgi bundle @{bundleUrl} to ServiceMix ESB on @{esbHost}</echo>
             <!--
             <sshexec host="@{esbHost}" port="8101" username="karaf" password="karaf" command="osgi:uninstall @{bundleUrl}" failonerror="false"/>
             <sshexec host="@{esbHost}" port="8101" username="karaf" password="karaf" command="osgi:install @{bundleUrl}" failonerror="false"/>
             -->
             <groovy>
                 <![CDATA[
+                def idx = 0
+                def getBundleId = { bundleJar ->
+                    def jarFileName = (new File(bundleJar)).name
+                    ant.project.properties.remove("osgi_list_output")
+                    def result = ant.sshexec(host:"@{smxHost}",
+                                             port:@{smxSshPort},
+                                            password:"@{smxAdminUsername}",
+                                            username:"@{smxAdminPassword}",
+                                            command:"osgi:list -l",
+                                            outputProperty:"osgi_list_output" + (++idx),
+                                            trust:"true"
+                                            )
+                    println "jarFileName: ${jarFileName}"
+                    def osgiListOut = ant.project.properties['osgi_list_output' + idx]
+                    def bundleLine = (osgiListOut =~ /(?m)^.*${jarFileName}.*$/)
+                    if(bundleLine.size() > 0){
+                        println "bundleLine: ${bundleLine[0]}"
+                        existingBundleId = (bundleLine[0] =~ /\d+/)[0]
+                        println "bundleId: ${existingBundleId}"
+                    }
+                    return existingBundleId
+                }
                 def ant = new AntBuilder()
-                def result = ant.sshexec(host:"@{esbHost}",
-                                         port:8101,
-                                         password:"karaf",
-                                         username:"karaf",
-                                         command:"osgi:list")
-                println "result: ${result}"
+                def bundleId = getBundleId("@{bundleUrl}")
+                if ( bundleId ) {
+                    def result3 = ant.sshexec(host:"@{smxHost}",
+                                         port:@{smxSshPort},
+                                         password:"@{smxAdminUsername}",
+                                         username:"@{smxAdminPassword}",
+                                            trust:"true",
+                                         command:"osgi:uninstall ${bundleId}")
+                }
+                def result2 = ant.sshexec(host:"@{smxHost}",
+                                         port:@{smxSshPort},
+                                         password:"@{smxAdminUsername}",
+                                         username:"@{smxAdminPassword}",
+                                            trust:"true",
+                                         command:"osgi:install @{bundleUrl}")
+                def newBundleId = getBundleId("@{bundleUrl}")
+                def result4 = ant.sshexec(host:"@{smxHost}",
+                                         port:@{smxSshPort},
+                                         password:"@{smxAdminUsername}",
+                                         username:"@{smxAdminPassword}",
+                                            trust:"true",
+                                         command:"osgi:headers ${newBundleId}")
                 ]]>
             </groovy>
         </sequential>

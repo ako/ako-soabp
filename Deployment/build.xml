@@ -60,7 +60,8 @@
                         version="1.0"/>
     </target>
     <target name="deploy-relation-proxy-bundle">
-        <esb-osgi-bundle-deploy bundleUrl="file:///${user.home}/.m2/repository/nl/iteye/integration/RelationProxy/0.1-SNAPSHOT/RelationProxy-0.1-SNAPSHOT.jar"
-                                esbHost="localhost"/>
+        <smx-osgi-bundle-deploy bundleUrl="file:///${user.home}/.m2/repository/nl/iteye/integration/RelationProxy/0.1-SNAPSHOT/RelationProxy-0.1-SNAPSHOT.jar"
+                                smxHost="${esb.host}"
+                                />
     </target>
 </project>

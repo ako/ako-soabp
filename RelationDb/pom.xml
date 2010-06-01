@@ -64,9 +64,9 @@
                             <autocommit>true</autocommit>
                             <onError>continue</onError>
                             <srcFiles>
-                                <srcFile>src/main/sql/1.0/drop-schema.sql</srcFile>
-                                <srcFile>src/main/sql/1.0/create-schema.sql</srcFile>
-                                <srcFile>src/main/sql/1.0/validate-schema.sql</srcFile>
+                                <srcFile>src/main/sql/1.0/downgrade-schema.sql</srcFile>
+                                <srcFile>src/main/sql/1.0/upgrade-schema.sql</srcFile>
+                                <srcFile>src/main/sql/1.0/validate-upgrade.sql</srcFile>
                                 <srcFile>src/main/sql/1.0/initialize-data.sql</srcFile>
                             </srcFiles>
                         </configuration>

@@ -29,20 +29,38 @@
             appName="MailService-1.0"
             />
     </target>
+    <target name="deploy-relationservice-war">
+        <gf-undeploy-war
+            warFile="${user.home}/.m2/repository/nl/iteye/services/RelationService/0.1-SNAPSHOT/RelationService-0.1-SNAPSHOT.war"
+            adminPort="${glassfish.admin.port}"
+            adminUser="anonymous"
+            appName="RelationService-1.0"
+            />
+        <gf-deploy-war
+            warFile="${user.home}/.m2/repository/nl/iteye/services/RelationService/0.1-SNAPSHOT/RelationService-0.1-SNAPSHOT.war"
+            adminPort="${glassfish.admin.port}"
+            adminUser="anonymous"
+            appName="RelationService-1.0"
+            />
+    </target>
     <target name="deploy-relation-db">
         <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
-            dbUsername="dev"
-            dbPassword="dev"
-            databaseHost="localhost"
-            databaseName="dev"
-            version="1.0"/>
+                     dbUsername="dev"
+                     dbPassword="dev"
+                     databaseHost="localhost"
+                     databaseName="dev"
+                     version="1.0"/>
     </target>
     <target name="deploy-order-db">
         <sqlplus-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/OrderDb/1.0-SNAPSHOT/OrderDb-1.0-SNAPSHOT-db.zip"
-            dbUsername="test"
-            dbPassword="test"
-            databaseHost="localhost"
-            databaseName="XE"
-            version="1.0"/>
+                        dbUsername="test"
+                        dbPassword="test"
+                        databaseHost="localhost"
+                        databaseName="XE"
+                        version="1.0"/>
+    </target>
+    <target name="deploy-relation-proxy-bundle">
+        <esb-osgi-bundle-deploy bundleUrl="file:///${user.home}/.m2/repository/nl/iteye/integration/RelationProxy/0.1-SNAPSHOT/RelationProxy-0.1-SNAPSHOT.jar"
+                                esbHost="localhost"/>
     </target>
 </project>

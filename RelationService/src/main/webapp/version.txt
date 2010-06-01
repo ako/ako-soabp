@@ -1,0 +1,4 @@
+$Date: $
+$Revision: $
+$Author: $
+Project version: ${project.version}

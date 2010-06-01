@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package nl.iteye.services.relationrestservice;
+package nl.iteye.services.relationrestservice.integrationtest;
 
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.test.framework.JerseyTest;

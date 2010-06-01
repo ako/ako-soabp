@@ -181,23 +181,23 @@
                 <fileset dir="${java.io.tmpdir}/sql-deploy/" includes="**/@{version}/validate_schema.sql"/>
             </path>
             <sqlplus sqlFile="${toString:db.drop.script}"
-                  databaseHost="@{databaseHost}"
-                  databaseName="@{databaseName}"
-                  dbUsername="@{dbUsername}"
-                  dbPassword="@{dbPassword}"
-                  />
+                     databaseHost="@{databaseHost}"
+                     databaseName="@{databaseName}"
+                     dbUsername="@{dbUsername}"
+                     dbPassword="@{dbPassword}"
+                     />
             <sqlplus sqlFile="${toString:db.create.script}"
-                  databaseHost="@{databaseHost}"
-                  databaseName="@{databaseName}"
-                  dbUsername="@{dbUsername}"
-                  dbPassword="@{dbPassword}"
-                  />
+                     databaseHost="@{databaseHost}"
+                     databaseName="@{databaseName}"
+                     dbUsername="@{dbUsername}"
+                     dbPassword="@{dbPassword}"
+                     />
             <sqlplus sqlFile="${toString:db.validate.script}"
-                  databaseHost="@{databaseHost}"
-                  databaseName="@{databaseName}"
-                  dbUsername="@{dbUsername}"
-                  dbPassword="@{dbPassword}"
-                  />
+                     databaseHost="@{databaseHost}"
+                     databaseName="@{databaseName}"
+                     dbUsername="@{dbUsername}"
+                     dbPassword="@{dbPassword}"
+                     />
         </sequential>
     </macrodef>
     <macrodef name="sqlplus">
@@ -212,6 +212,28 @@
                 <arg line="@{dbUsername}/@{dbPassword}@@//@{databaseHost}:@{databasePort}/@{databaseName}"/>
                 <arg line="@@@{sqlFile}"/>
             </exec>
+        </sequential>
+    </macrodef>
+    <macrodef name="esb-osgi-bundle-deploy">
+        <attribute name="bundleUrl"/>
+        <attribute name="esbHost"/>
+        <sequential>
+            <echo>deploying osgi bundle @{bundleUrl} to @{esbHost}</echo>
+            <!--
+            <sshexec host="@{esbHost}" port="8101" username="karaf" password="karaf" command="osgi:uninstall @{bundleUrl}" failonerror="false"/>
+            <sshexec host="@{esbHost}" port="8101" username="karaf" password="karaf" command="osgi:install @{bundleUrl}" failonerror="false"/>
+            -->
+            <groovy>
+                <![CDATA[
+                def ant = new AntBuilder()
+                def result = ant.sshexec(host:"@{esbHost}",
+                                         port:8101,
+                                         password:"karaf",
+                                         username:"karaf",
+                                         command:"osgi:list")
+                println "result: ${result}"
+                ]]>
+            </groovy>
         </sequential>
     </macrodef>
 </project>

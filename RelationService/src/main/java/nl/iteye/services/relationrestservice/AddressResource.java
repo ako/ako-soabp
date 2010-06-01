@@ -5,6 +5,7 @@
 package nl.iteye.services.relationrestservice;
 
 import java.util.logging.Logger;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,12 +19,21 @@ import nl.iteye.services.relationrestservice.model.Address;
  * @author andrej
  */
 @Path("/address/{id}")
+@Stateless
 public class AddressResource {
 
     private static final Logger log = Logger.getLogger(AddressResource.class.
             getName());
 
-    @Inject AddressDao addressDao;
+    AddressDao addressDao;
+
+    public AddressDao getAddressDao() {
+        return addressDao;
+    }
+
+    @Inject public void setAddressDao(AddressDao addressDao) {
+        this.addressDao = addressDao;
+    }
 
     @GET
     @Produces({"text/xml","application/json"})
@@ -39,7 +49,7 @@ public class AddressResource {
         address.setCountry("The Netherlands");
          *
          */
-        Address address = addressDao.getAddress(id);
+        Address address = getAddressDao().getAddress(id);
         return address;
     }
 }

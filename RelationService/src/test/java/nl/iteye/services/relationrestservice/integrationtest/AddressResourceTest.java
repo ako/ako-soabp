@@ -1,4 +1,4 @@
-package nl.iteye.services.relationrestservice;
+package nl.iteye.services.relationrestservice.integrationtest;
 
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.test.framework.JerseyTest;
@@ -7,10 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import nl.iteye.services.relationrestservice.AddressResource;
 import static org.junit.Assert.*;
 import nl.iteye.services.relationrestservice.dao.AddressDao;
 import nl.iteye.services.relationrestservice.model.Address;
-import org.junit.Assert;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
 /**
@@ -29,16 +29,6 @@ public class AddressResourceTest extends JerseyTest {
      */
     @Test
     public void testGetAddress() throws SQLException {
-        /*
-        System.out.println("testGetAddress");
-        WebResource r = resource();
-        System.out.println("resource: " + r);
-        String s = r.path("address/1").get(String.class);
-        String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><address><city>The Hague</city><country>The Netherlands</country><id>1</id><streetName>Scheveningseweg</streetName><streetNumber>4a</streetNumber><zipCode>2580AB</zipCode></address>";
-        System.out.println("address 1 = " + s);
-        Assert.assertEquals(expected, s);
-         *
-         */
                 /*
          * setup mocking
          */
@@ -58,12 +48,12 @@ public class AddressResourceTest extends JerseyTest {
          */
         AddressDao dao = new AddressDao();
         dao.dataSource = ds;
-        AddressResource resource = new AddressResource();
-        resource.addressDao = dao;
-        Address address = resource.getAddress(new Long(1));
-        assertEquals("oldstreet",address.getStreetName());
+        //AddressResource resource = new AddressResource();
+        //resource.addressDao = dao;
+        AddressResource ar  = spy(new AddressResource());
+        when(ar.getAddressDao()).thenReturn(dao);
 
-        when()
+        //when()
         /*
          * test using http call
          */

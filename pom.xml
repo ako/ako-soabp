@@ -75,7 +75,7 @@
         <activemq-version>5.3.0</activemq-version>
         <jetty-version>6.1.22</jetty-version>
         <xbean-spring-version>3.5</xbean-spring-version>
-        <servicemix.home>/home/akoelewijn/programs/apache-servicemix-4.2.0-fuse-01-00</servicemix.home>
+        <servicemix.home>/Users/andrej/java/apache-servicemix-4.2.0-fuse-01-00</servicemix.home>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <build>

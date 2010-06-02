@@ -43,12 +43,17 @@
             appName="RelationService-1.0"
             />
     </target>
+    <target name="create-relationdb-datasource">
+        <gf-create-jdbc-pool connectionName="relationDb" jdbcUrl="jdbc\:postgresql\://localhost\:5432\:dev" jdbcUser="dev" jdbcPassword="dev"
+            dataSourceClassName="org.postgresql.ds.PGPoolingDataSource"/>
+    </target>
     <target name="deploy-relation-db">
         <psql-deploy zipfile="${user.home}/.m2/repository/nl/iteye/db/RelationDb/1.0-SNAPSHOT/RelationDb-1.0-SNAPSHOT-db.zip"
-                     dbUsername="dev"
-                     dbPassword="dev"
-                     databaseHost="localhost"
-                     databaseName="dev"
+                     dbUsername="${relation.db.username}"
+                     dbPassword="${relation.db.password}"
+                     databaseHost="${relation.db.host}"
+                     databaseName="${relation.db.name}"
+                     databasePort="${relation.db.port}"
                      version="1.0"/>
     </target>
     <target name="deploy-order-db">

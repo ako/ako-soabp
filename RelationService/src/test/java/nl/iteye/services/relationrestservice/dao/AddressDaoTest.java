@@ -39,7 +39,7 @@ public class AddressDaoTest {
         PreparedStatement stmt = mock(PreparedStatement.class);
         ResultSet rset = mock(ResultSet.class);
         when(ds.getConnection()).thenReturn(conn);
-        when(conn.prepareStatement("select * from address where id = ?")).
+        when(conn.prepareStatement("select * from addresses where id = ?")).
                 thenReturn(stmt);
         when(stmt.executeQuery()).thenReturn(rset);
         when(rset.next()).thenReturn(Boolean.TRUE);
@@ -49,7 +49,7 @@ public class AddressDaoTest {
          * test the code
          */
         AddressDao dao = new AddressDao();
-        dao.dataSource = ds;
+        dao.relationDb = ds;
         Address address = dao.getAddress(new Long(1));
         Assert.assertEquals("oldstreet",address.getStreetName());
     }

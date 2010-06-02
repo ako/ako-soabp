@@ -39,16 +39,6 @@ public class AddressResource {
     @Produces({"text/xml","application/json"})
     public Address getAddress(@PathParam("id") Long id) {
         log.info(">getAddress: " + id);
-        /*
-        Address address = new Address();
-        address.setId(1L);
-        address.setCity("The Hague");
-        address.setStreetName("Scheveningseweg");
-        address.setStreetNumber("4a");
-        address.setZipCode("2580AB");
-        address.setCountry("The Netherlands");
-         *
-         */
         Address address = getAddressDao().getAddress(id);
         return address;
     }

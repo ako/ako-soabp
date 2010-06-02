@@ -70,6 +70,42 @@
             </java>
         </sequential>
     </macrodef>
+    <macrodef name="gf-create-jdbc-pool">
+        <attribute name="host" default="localhost"/>
+        <attribute name="adminPort" default="4848"/>
+        <attribute name="adminUser" default="admin"/>
+        <attribute name="adminPasswordFile" default="${basedir}/passwords.properties"/>
+        <attribute name="dataSourceClassName" default="org.postgresql.ds.PGPoolingDataSource"/>
+        <attribute name="jdbcUser" default="dev"/>
+        <attribute name="jdbcPassword" default="dev"/>
+        <attribute name="jdbcUrl" default="jdbc\:postgresql\://localhost\:5432\:dev"/>
+        <attribute name="connectionName" default="myDB"/>
+        <sequential>
+            <echo>creating connection pool</echo>
+            <java classname="com.sun.enterprise.admin.cli.AsadminMain" fork="true" classpathref="tool.path">
+                <arg line="--user @{adminUser}"/>
+                <arg line="--interactive=false"/>
+                <arg line="--host @{host}"/>
+                <arg line="--port @{adminPort}"/>
+                <arg line="--passwordfile @{adminPasswordFile}"/>
+                <arg line="create-jdbc-connection-pool"/>
+                <arg line="--datasourceclassname @{dataSourceClassName}"/>
+                <arg line="--restype javax.sql.ConnectionPoolDataSource"/>
+                <arg line="--property 'User=@{jdbcUser}:Password=@{jdbcPassword}:URL=@{jdbcUrl}'"/>
+                <arg line="jdbc/@{connectionName}Pool"/>
+            </java>
+            <echo>Creating datasource</echo>
+            <java classname="com.sun.enterprise.admin.cli.AsadminMain" fork="true" classpathref="tool.path">
+                <arg line="--user @{adminUser}"/>
+                <arg line="--interactive=false"/>
+                <arg line="--host @{host}"/>
+                <arg line="--port @{adminPort}"/>
+                <arg line="--passwordfile @{adminPasswordFile}"/>
+                <arg line="create-jdbc-resource"/>
+                <arg line="--connectionpoolid jdbc/@{connectionName}Pool"/>
+                <arg line="jdbc/@{connectionName}"/>
+            </java>        </sequential>
+    </macrodef>
     <macrodef name="pgsql-deploy">
         <attribute name="zipFile"/>
         <attribute name="jdbcUrl"/>
@@ -104,6 +140,7 @@
         <attribute name="version"/>
         <attribute name="dbUsername"/>
         <attribute name="dbPassword"/>
+        <attribute name="databasePort" default="5432"/>
         <sequential>
             <delete dir="${java.io.tmpdir}/pgsql-deploy" quiet="true"/>
             <copy file="@{zipFile}" todir="${java.io.tmpdir}/pgsql-deploy"/>
@@ -124,18 +161,21 @@
                   databaseName="@{databaseName}"
                   dbUsername="@{dbUsername}"
                   dbPassword="@{dbPassword}"
+                  databasePort="@{databasePort}"
                   />
             <psql sqlFile="${toString:db.create.script}"
                   databaseHost="@{databaseHost}"
                   databaseName="@{databaseName}"
                   dbUsername="@{dbUsername}"
                   dbPassword="@{dbPassword}"
+                  databasePort="@{databasePort}"
                   />
             <psql sqlFile="${toString:db.validate.script}"
                   databaseHost="@{databaseHost}"
                   databaseName="@{databaseName}"
                   dbUsername="@{dbUsername}"
                   dbPassword="@{dbPassword}"
+                  databasePort="@{databasePort}"
                   />
         </sequential>
     </macrodef>

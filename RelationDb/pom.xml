@@ -46,9 +46,9 @@
                 <!-- common configuration shared by all executions -->
                 <configuration>
                     <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5432:dev</url>
-                    <username>dev</username>
-                    <password>dev</password>
+                    <url>${relation.db.url}</url>
+                    <username>${relation.db.username}</username>
+                    <password>${relation.db.password}</password>
                     <!--all executions are ignored if -Dmaven.test.skip=true-->
                     <skip>${maven.test.skip}</skip>
                 </configuration>

@@ -47,7 +47,7 @@ public class AddressResourceTest extends JerseyTest {
          * test the code
          */
         AddressDao dao = new AddressDao();
-        dao.dataSource = ds;
+        dao.relationDb = ds;
         //AddressResource resource = new AddressResource();
         //resource.addressDao = dao;
         AddressResource ar  = spy(new AddressResource());

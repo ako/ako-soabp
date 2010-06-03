@@ -4,16 +4,21 @@
  */
 package nl.iteye.process.bulkaddresschangeprocess;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.security.auth.login.Configuration;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import nl.iteye.process.bulkaddresschangeprocess.model.AddressChange;
 import nl.iteye.process.bulkaddresschangeprocess.model.BulkAddressChangeRequest;
 import nl.iteye.process.bulkaddresschangeprocess.model.Link;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -80,8 +85,52 @@ public class BulkAddressChangeRouteBuilderTest {
         ProducerTemplate pt = ctx.createProducerTemplate();
         String response = pt.requestBody(
                 "cxfrs://http://localhost:9000/AddressChangeRequest", req,
-                                        String.class);
+                String.class);
         log.info("Response: " + response);
         // expect: accepted
+    }
+
+    @Test
+    public void testHttpClient() throws Exception {
+        /*
+         * create some test data
+         *
+         */
+        BulkAddressChangeRequest req = new BulkAddressChangeRequest();
+        List<AddressChange> changes = new ArrayList<AddressChange>();
+        AddressChange change1 = new AddressChange();
+        change1.setNewStreet("oldsquare");
+        Link oldAddress = new Link();
+        oldAddress.setHref("http://localhost:9002/addresses/1");
+        oldAddress.setRelationship("oldAddress");
+        oldAddress.setType(null);
+        change1.setOldAddress(oldAddress);
+        changes.add(change1);
+        req.setChanges(changes);
+        /*
+         * marshall to xml
+         *
+         */
+        JAXBContext jaxbContext = JAXBContext.newInstance(req.getClass());
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", new Boolean(true));
+        StringWriter xmlWriter = new StringWriter();
+        marshaller.marshal(req, xmlWriter);
+        log.info("xml document: " + xmlWriter);
+        /*
+         * call rest service using http client
+         *
+         */
+        PostMethod post = new PostMethod(
+                "http://localhost:9000/AddressChangeRequest");
+        post.addRequestHeader("Accept", "text/xml");
+        RequestEntity entity = new StringRequestEntity(xmlWriter.toString(),
+                                                       "text/xml", "UTF-8");
+        post.setRequestEntity(entity);
+        HttpClient httpclient = new HttpClient();
+        int statusCode = httpclient.executeMethod(post);
+        String body = post.getResponseBodyAsString();
+        log.info("status: " + statusCode);
+        log.info("body: " + body);
     }
 }

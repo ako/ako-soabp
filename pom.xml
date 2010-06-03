@@ -61,7 +61,8 @@
         <module>Deployment-deps</module>
         <module>BpmnToCamelMojo</module>
         <module>NewOrderBpmnProcess</module>
-    </modules>
+    <module>BulkAddressChangeProcess</module>
+  </modules>
     <properties>
         <relation.db.url>jdbc:postgresql://localhost:5432:dev</relation.db.url>
         <relation.db.username>dev</relation.db.username>

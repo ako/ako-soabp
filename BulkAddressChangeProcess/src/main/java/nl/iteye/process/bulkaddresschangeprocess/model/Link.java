@@ -1,4 +1,5 @@
-package nl.iteye.services.relationrestservice.model;
+
+package nl.iteye.process.bulkaddresschangeprocess.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;

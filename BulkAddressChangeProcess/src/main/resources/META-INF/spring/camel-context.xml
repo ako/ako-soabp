@@ -10,7 +10,7 @@
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <jaxrs:server id="restService"
-                  address="http://localhost:9002"
+                  address="http://localhost:9000"
                   staticSubresourceResolution="true">
         <jaxrs:serviceBeans>
             <ref bean="addressChangesResourceBean"/>

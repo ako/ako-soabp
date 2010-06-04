@@ -4,17 +4,24 @@
  */
 package nl.iteye.process.bulkaddresschangeprocess;
 
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import nl.iteye.process.bulkaddresschangeprocess.model.AddressChange;
 import nl.iteye.process.bulkaddresschangeprocess.model.BulkAddressChangeRequest;
 import nl.iteye.process.bulkaddresschangeprocess.model.Link;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.component.cxf.CxfConstants;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -67,8 +74,11 @@ public class BulkAddressChangeRouteBuilderTest {
     }
 
     @Test
-    public void testConfigure() {
-        // create some test data
+    public void testConfigure() throws JAXBException {
+        /*
+         * create some test data
+         *
+         */
         BulkAddressChangeRequest req = new BulkAddressChangeRequest();
         List<AddressChange> changes = new ArrayList<AddressChange>();
         AddressChange change1 = new AddressChange();
@@ -80,13 +90,42 @@ public class BulkAddressChangeRouteBuilderTest {
         change1.setOldAddress(oldAddress);
         changes.add(change1);
         req.setChanges(changes);
-        // post bulk change to endpoint
+        /*
+         * marshall to json
+         *
+         */
+        JAXBContext jaxbContext = JAXBContext.newInstance(req.getClass());
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", new Boolean(true));
+        final StringWriter xmlWriter = new StringWriter();
+        marshaller.marshal(req, xmlWriter);
+        log.info("xml document: " + xmlWriter);
+
+        /*
+         * post bulk change to endpoint
+         *
+         */
         CamelContext ctx = (CamelContext) springCtx.getBean("camelContext");
         ProducerTemplate pt = ctx.createProducerTemplate();
-        String response = pt.requestBody(
-                "cxfrs://http://localhost:9000/AddressChangeRequest", req,
-                String.class);
-        log.info("Response: " + response);
+//        String response = pt.requestBody(
+//                "cxfrs://http://localhost:9000/AddressChangeRequest", req,
+//                String.class);
+//        log.info("Response: " + response);
+        Exchange exchange = ctx.createProducerTemplate().send(
+                "cxfrs://http://localhost:9000/AddressChangeRequest", new Processor() {
+
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                exchange.setPattern(ExchangePattern.InOut);
+                Message inMsg = exchange.getIn();
+                inMsg.setHeader(Exchange.HTTP_METHOD, "POST");
+                inMsg.setHeader(Exchange.CONTENT_TYPE, "text/xml");
+                inMsg.setHeader(Exchange.ACCEPT_CONTENT_TYPE, "text/xml");
+                inMsg.setBody(xmlWriter.toString());
+                inMsg.setHeader(CxfConstants.CAMEL_CXF_RS_RESPONSE_CLASS, BulkAddressChangeRequest.class);
+            }
+        });
+        log.info("exchange: " + exchange.getOut().getBody());
         // expect: accepted
     }
 

@@ -40,8 +40,5 @@ public class BulkAddressChangeRouteBuilder extends RouteBuilder {
         from("seda:storeBulkRequest").to("file:///tmp").to(
                 "seda:splitBulkRequest");
         from("seda:splitBulkRequest").to("log:done.splitting");
-        /*
-         * Using jetty
-         */
     }
 }

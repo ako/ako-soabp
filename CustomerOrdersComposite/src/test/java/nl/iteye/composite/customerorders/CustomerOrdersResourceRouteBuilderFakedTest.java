@@ -13,18 +13,18 @@ import org.junit.Test;
  *
  * @author andrej
  */
-public class CustomerOrdersResourceRouteBuilderTest extends CamelTestSupport {
+public class CustomerOrdersResourceRouteBuilderFakedTest extends CamelTestSupport {
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
-        System.setProperty("config-file", "mocked-camel-config.properties");
+        System.setProperty("config-file", "faked-camel-config.properties");
         CamelContext ctx = super.createCamelContext();
         return ctx;
     }
 
     @Override
     protected RouteBuilder[] createRouteBuilders() throws Exception {
-        RouteBuilder[] routes = {new CustomerOrdersResourceRouteBuilder()};
+        RouteBuilder[] routes = {new CustomerOrdersResourceRouteBuilder(), new FakeCustomerResourceRouteBuilder(), new FakeOrdersResourceRouteBuilder()};
         return routes;
     }
 
@@ -32,30 +32,6 @@ public class CustomerOrdersResourceRouteBuilderTest extends CamelTestSupport {
     public void testConfigure() throws Exception {
         Configuration config = new PropertiesConfiguration(System.getProperty(
                 "config-file"));
-        /*
-         * Setup service mocks
-         */
-        getMockEndpoint(config.getString("customerResource.endpoint")).
-                whenAnyExchangeReceived(new Processor() {
-
-            @Override
-            public void process(Exchange exchng) throws Exception {
-                String custNo = exchng.getIn().getHeader("customer").toString();
-                exchng.getOut().setHeader(Exchange.CONTENT_TYPE, "text/xml");
-                exchng.getOut().setBody(
-                        "<customer custNo='" + custNo + "' relationId='1000" + custNo + "' firstName='Peter' lastName='Semper'/>");
-            }
-        });
-        getMockEndpoint(config.getString("orderResource.endpoint")).
-                whenAnyExchangeReceived(new Processor() {
-
-            @Override
-            public void process(Exchange exchng) throws Exception {
-                String relationId = exchng.getIn().getHeader("relId").toString();
-                exchng.getOut().setBody(
-                        "<orders relationId='" + relationId + "'><order id='1' product='Car'/></orders>");
-            }
-        });
         /*
          * Send message to endpoint
          */

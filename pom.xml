@@ -63,7 +63,10 @@
         <module>NewOrderBpmnProcess</module>
         <module>BulkAddressChangeProcess</module>
         <module>CustomerOrdersComposite</module>
-    </modules>
+    <module>ConfigurableBundle</module>
+    <module>ConfigurableService</module>
+    <module>CamelConverterTest</module>
+  </modules>
     <properties>
         <relation.db.url>jdbc:postgresql://localhost:5432:dev</relation.db.url>
         <relation.db.username>dev</relation.db.username>

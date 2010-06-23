@@ -26,7 +26,7 @@ public class FakeOrdersResourceRouteBuilder extends RouteBuilder {
                 String relationId = exchng.getIn().getHeader("relId").toString();
                 exchng.getOut().setHeader(Exchange.CONTENT_TYPE, "text/xml");
                 exchng.getOut().setBody(
-                        "<orders relationId='" + relationId + "'><order id='1' product='Car'/></orders>");
+                        "<orders relationId='" + relationId + "'><order id='1' product='Car'/><order id='2' product='Bicycle'/></orders>");
             }
         });
     }
